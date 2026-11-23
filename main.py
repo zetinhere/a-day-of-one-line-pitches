@@ -36,11 +36,23 @@ def build_pitch() -> str:
     return HOOK + " — " + INVITATION + " and " + PAYOFF + ", " + CLOSE + "."
 
 
-def write_entry(text: str, path: str = "/output/entry.txt") -> None:
-    """Write the pitch with no trailing newline; it must be 1-240 chars."""
+def validate_pitch(text: str) -> None:
+    """Check the pitch against the brief: one sentence, 1-240 characters.
+
+    A sentence is counted by its terminal stops; the dot inside
+    "make.fun" is not a sentence end, so it is not counted.
+    """
     count = len(text)
     assert 1 <= count <= 240, f"entry is {count} characters, must be 1-240"
     assert text.strip(), "entry must not be only white space"
+    stops = sum(text.count(c) for c in ".?!") - text.count("make.fun")
+    assert stops == 1, f"entry has {stops} sentence ends, must be 1"
+    assert text.endswith("."), "entry must end with a full stop"
+
+
+def write_entry(text: str, path: str = "/output/entry.txt") -> None:
+    """Write the pitch with no trailing newline."""
+    validate_pitch(text)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8", newline="") as f:
         f.write(text)
